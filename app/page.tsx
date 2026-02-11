@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useCallback, useState } from 'react'
 
 export default function Home() {
@@ -115,56 +114,45 @@ export default function Home() {
   )
 
   return (
-    <main style={{ padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Local STT (drag .wav here)</h1>
+    <main className='flex min-h-screen flex-col gap-4 p-8'>
+      <section className='flex items-center justify-between'>
+        <h1>Local STT (drag .wav here)</h1>
+        <div className='flex items-center gap-2'>
+          <label>Output format:</label>
+          <select className='border' value={format} onChange={(e) => setFormat(e.target.value)}>
+            <option value='srt'>srt</option>
+            <option value='json'>json</option>
+          </select>
+        </div>
+      </section>
 
-      <div style={{ marginBottom: 12 }}>
-        <label style={{ marginRight: 8 }}>Output format:</label>
-        <select value={format} onChange={(e) => setFormat(e.target.value)}>
-          <option value='srt'>srt (default)</option>
-          <option value='json'>json</option>
-        </select>
-      </div>
-
-      <div
+      <section
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
-        style={{
-          border: '2px dashed #888',
-          padding: 40,
-          textAlign: 'center',
-          background: dragOver ? '#f0f8ff' : 'transparent',
-        }}
+        className='grid flex-1 place-items-center border-2 border-dashed'
       >
-        <p>Drop a .wav file here, or</p>
-        <input type='file' accept='audio/wav,.wav' onChange={onFileInput} disabled={loading} />
-        <p style={{ marginTop: 8, color: '#666' }}>Only .wav files are accepted.</p>
-      </div>
+        <div className='flex flex-col items-center gap-4 text-2xl'>
+          <p>Drop a .wav file here, or</p>
+          <input type='file' accept='audio/wav,.wav' onChange={onFileInput} disabled={loading} />
+        </div>
+      </section>
 
-      <div style={{ marginTop: 12 }}>
-        <button
-          className='cursor-pointer rounded border px-2'
-          onClick={() => uploadFile(selectedFile)}
-          disabled={loading || !selectedFile}
-        >
-          {loading ? 'Processing...' : 'Start'}
-        </button>
-        <span style={{ marginLeft: 12 }}>
-          {selectedFile ? selectedFile.name : 'No file selected'}
-        </span>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <strong>Status:</strong> {status ?? 'idle'}
-      </div>
-
-      <div style={{ marginTop: 12, color: '#444' }}>
-        <small>
-          Note: STT can take many minutes; the server proxy keeps requests open for at least 10
-          minutes.
-        </small>
-      </div>
+      <section className='flex items-center justify-between'>
+        <div>
+          <strong>Status:</strong> {status ?? 'idle'}
+        </div>
+        <div className='flex items-center gap-2'>
+          <span>{selectedFile ? selectedFile.name : 'No file selected'}</span>
+          <button
+            className='cursor-pointer rounded border px-2'
+            onClick={() => uploadFile(selectedFile)}
+            disabled={loading || !selectedFile}
+          >
+            {loading ? 'Processing...' : 'Start'}
+          </button>
+        </div>
+      </section>
     </main>
   )
 }

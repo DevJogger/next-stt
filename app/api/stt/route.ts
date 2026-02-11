@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     if (ct) headers.set('Content-Type', ct)
 
     // prefer original uploaded filename (change extension to chosen response_format)
-    const originalName = ((file as unknown) as { name?: string })?.name ?? 'upload.wav'
+    const originalName = file?.name ?? 'upload.wav'
     const base = String(originalName).replace(/\.[^/.]+$/, '')
     const outFilename = `${base}.${response_format === 'json' ? 'json' : 'srt'}`
     const cd = `attachment; filename="${outFilename}"`
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
 
     return new Response(upstream.body, { status: upstream.status, headers })
   } catch (err: unknown) {
+    console.error('Error in STT proxy:', err)
     const e = err as { name?: string }
     if (e?.name === 'AbortError') {
       return new Response('Upstream request timed out', { status: 504 })
