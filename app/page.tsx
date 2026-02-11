@@ -1,4 +1,15 @@
 'use client'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import React, { useCallback, useState } from 'react'
 
 export default function Home() {
@@ -116,13 +127,29 @@ export default function Home() {
   return (
     <main className='flex min-h-screen flex-col gap-4 p-8'>
       <section className='flex items-center justify-between'>
-        <h1>Local STT (drag .wav here)</h1>
         <div className='flex items-center gap-2'>
-          <label>Output format:</label>
-          <select className='border' value={format} onChange={(e) => setFormat(e.target.value)}>
-            <option value='srt'>srt</option>
-            <option value='json'>json</option>
-          </select>
+          <div>Output Format</div>
+          <Select onValueChange={(value) => setFormat(value)} defaultValue={format}>
+            <SelectTrigger className='w-24'>
+              <SelectValue placeholder='Theme' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value='srt'>srt</SelectItem>
+                <SelectItem value='json'>json</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='flex items-center gap-2'>
+          <span>{selectedFile ? selectedFile.name : 'No file selected'}</span>
+          <Button
+            className='cursor-pointer'
+            onClick={() => uploadFile(selectedFile)}
+            disabled={loading || !selectedFile}
+          >
+            {loading ? 'Processing...' : 'Start'}
+          </Button>
         </div>
       </section>
 
@@ -130,28 +157,19 @@ export default function Home() {
         onDrop={onDrop}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
-        className='grid flex-1 place-items-center border-2 border-dashed'
+        className={cn(
+          'grid flex-1 place-items-center border-2 border-dashed p-4',
+          dragOver && 'border-foreground/50'
+        )}
       >
-        <div className='flex flex-col items-center gap-4 text-2xl'>
-          <p>Drop a .wav file here, or</p>
-          <input type='file' accept='audio/wav,.wav' onChange={onFileInput} disabled={loading} />
+        <div className='flex flex-col items-start gap-4 md:flex-row md:items-center'>
+          <p className='pl-2 whitespace-nowrap md:p-0'>Drop a .wav file here, or</p>
+          <Input type='file' accept='audio/wav,.wav' onChange={onFileInput} disabled={loading} />
         </div>
       </section>
 
-      <section className='flex items-center justify-between'>
-        <div>
-          <strong>Status:</strong> {status ?? 'idle'}
-        </div>
-        <div className='flex items-center gap-2'>
-          <span>{selectedFile ? selectedFile.name : 'No file selected'}</span>
-          <button
-            className='cursor-pointer rounded border px-2'
-            onClick={() => uploadFile(selectedFile)}
-            disabled={loading || !selectedFile}
-          >
-            {loading ? 'Processing...' : 'Start'}
-          </button>
-        </div>
+      <section>
+        <strong>Status:</strong> {status ?? 'idle'}
       </section>
     </main>
   )
