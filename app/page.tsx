@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import React, { useCallback, useState } from 'react'
 
 export default function Home() {
-  const [format, setFormat] = useState('srt')
+  const [format, setFormat] = useState('text')
   const [status, setStatus] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -74,7 +74,7 @@ export default function Home() {
         }
         if (!filename) {
           const base = file.name.replace(/\.[^/.]+$/, '')
-          filename = `${base}.${format === 'json' ? 'json' : 'srt'}`
+          filename = `${base}.${format === 'text' ? 'txt' : format}`
         }
 
         const url = URL.createObjectURL(blob)
@@ -135,6 +135,7 @@ export default function Home() {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
+                <SelectItem value='text'>text</SelectItem>
                 <SelectItem value='srt'>srt</SelectItem>
                 <SelectItem value='json'>json</SelectItem>
               </SelectGroup>

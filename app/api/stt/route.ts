@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const form = await req.formData()
     const file = form.get('file') as File | null
-    const response_format = String(form.get('response_format') ?? 'srt')
+    const response_format = String(form.get('response_format') ?? 'text')
 
     if (!file) {
       return new Response('No file provided', { status: 400 })
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     // prefer original uploaded filename (change extension to chosen response_format)
     const originalName = file?.name ?? 'upload.wav'
     const base = String(originalName).replace(/\.[^/.]+$/, '')
-    const outFilename = `${base}.${response_format === 'json' ? 'json' : 'srt'}`
+    const outFilename = `${base}.${response_format === 'text' ? 'txt' : response_format}`
     const cd = `attachment; filename="${outFilename}"`
     headers.set('Content-Disposition', cd)
 
