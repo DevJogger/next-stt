@@ -46,7 +46,7 @@ export default function Home() {
       if (loading) return
 
       setLoading(true)
-      setStatus('Uploading and processing (this may take several minutes)...')
+      setStatus('Uploading...')
 
       try {
         const form = new FormData()
@@ -63,28 +63,62 @@ export default function Home() {
           throw new Error(`Server error: ${res.status} ${text}`)
         }
 
-        const blob = await res.blob()
+        const { job_id } = (await res.json()) as { job_id: string }
 
-        // determine filename from response header or fallback to original name with new extension
-        let filename = ''
-        const cd = res.headers.get('content-disposition')
-        if (cd) {
-          const match = /filename\*=UTF-8''(.+)$/.exec(cd) || /filename="?([^";]+)"?/.exec(cd)
-          if (match) filename = decodeURIComponent(match[1])
-        }
-        if (!filename) {
-          const base = file.name.replace(/\.[^/.]+$/, '')
-          filename = `${base}.${format === 'text' ? 'txt' : format}`
-        }
+        setStatus('Processing (this may take several minutes)...')
 
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = filename
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-        URL.revokeObjectURL(url)
+        // Poll every 5 seconds until the job is done
+        await new Promise<void>((resolve, reject) => {
+          const poll = () => {
+            fetch(`/api/stt/${job_id}`)
+              .then(async (pollRes) => {
+                const ct = pollRes.headers.get('content-type') ?? ''
+
+                if (ct.includes('application/json')) {
+                  const data = (await pollRes.json()) as { status: string; message?: string }
+
+                  if (data.status === 'error') {
+                    reject(new Error(data.message ?? 'Processing failed'))
+                    return
+                  }
+                  if (data.status === 'not_found') {
+                    reject(new Error('Job not found'))
+                    return
+                  }
+                  // still processing — try again after 5 s
+                  setTimeout(poll, 5000)
+                } else {
+                  // file response — trigger download
+                  const blob = await pollRes.blob()
+
+                  let filename = ''
+                  const cd = pollRes.headers.get('content-disposition')
+                  if (cd) {
+                    const match =
+                      /filename\*=UTF-8''(.+)$/.exec(cd) || /filename="?([^";]+)"?/.exec(cd)
+                    if (match) filename = decodeURIComponent(match[1])
+                  }
+                  if (!filename) {
+                    const base = file.name.replace(/\.[^/.]+$/, '')
+                    filename = `${base}.${format === 'text' ? 'txt' : format}`
+                  }
+
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = filename
+                  document.body.appendChild(a)
+                  a.click()
+                  a.remove()
+                  URL.revokeObjectURL(url)
+
+                  resolve()
+                }
+              })
+              .catch(reject)
+          }
+          poll()
+        })
 
         setStatus('Download started')
       } catch (err: unknown) {
