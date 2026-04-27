@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { convertToWav } from '@/lib/ffmpeg'
 import { completeJob, createJob, failJob } from '@/lib/stt-store'
 
 export async function POST(req: Request) {
@@ -29,9 +30,10 @@ export async function POST(req: Request) {
   // Fire-and-forget: run the upstream STT call in the background
   ;(async () => {
     try {
+      const wavBuffer = await convertToWav(fileBuffer, originalName)
       const outForm = new FormData()
       outForm.append('response_format', response_format)
-      outForm.append('file', new Blob([fileBuffer], { type: file.type }), originalName)
+      outForm.append('file', new Blob([wavBuffer], { type: 'audio/wav' }), originalName)
 
       const controller = new AbortController()
       // keep at least 11 minutes to be safe

@@ -20,15 +20,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
 
   const acceptFile = useCallback((file: File) => {
-    const name = file.name || ''
-    return name.toLowerCase().endsWith('.wav')
+    return file.type.startsWith('audio/') || file.type.startsWith('video/')
   }, [])
 
   // When a file is provided (drop or input), just select it. Upload is started via Start button.
   const handleFile = useCallback(
     (file: File) => {
       if (!acceptFile(file)) {
-        setStatus('Only .wav files are accepted')
+        setStatus('Only audio and video files are accepted')
         return
       }
       setSelectedFile(file)
@@ -198,8 +197,8 @@ export default function Home() {
         )}
       >
         <div className='flex flex-col items-start gap-4 md:flex-row md:items-center'>
-          <p className='pl-2 whitespace-nowrap md:p-0'>Drop a .wav file here, or</p>
-          <Input type='file' accept='audio/wav,.wav' onChange={onFileInput} disabled={loading} />
+          <p className='pl-2 whitespace-nowrap md:p-0'>Drop any audio or video file here, or</p>
+          <Input type='file' accept='audio/*,video/*' onChange={onFileInput} disabled={loading} />
         </div>
       </section>
 
